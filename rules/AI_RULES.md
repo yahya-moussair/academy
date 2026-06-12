@@ -71,6 +71,7 @@ The AI **must not**:
 * **Single Responsibility**: Keep new components focused on a single job.
 * **Keep Logic Simple**: Write straightforward React state and effect logic. Do not add complex state managers unless approved.
 * **No Duplication**: Do not create similar UI components with minor differences. Parameterize/extend existing ones instead.
+* **Localization**: Use the `TransText` component for rendering dynamic text based on the user's language stored in `localStorage`. The default language must be English (`'en'`).
 
 ---
 
