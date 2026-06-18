@@ -15,8 +15,9 @@ import { useState } from 'react';
  * Reusable success modal
  *
  * Props:
- * - open: boolean
- * - onOpenChange: (open: boolean) => void
+ * - open | isOpen: boolean
+ * - onOpenChange?: (open: boolean) => void
+ * - onClose?: () => void
  * - title?: string
  * - description?: string
  * - confirmLabel?: string
@@ -26,7 +27,9 @@ import { useState } from 'react';
  */
 export default function SuccessModal({
     open,
+    isOpen,
     onOpenChange,
+    onClose,
     title = 'Success',
     description = 'Your action was completed successfully.',
     confirmLabel = 'OK',
@@ -36,6 +39,22 @@ export default function SuccessModal({
 }) {
     const [internalLoading, setInternalLoading] = useState(false);
     const loading = loadingProp || internalLoading;
+    const isDialogOpen = isOpen ?? open ?? false;
+
+    const handleOpenChange = (nextOpen) => {
+        if (!nextOpen && loading) {
+            return;
+        }
+
+        if (onOpenChange) {
+            onOpenChange(nextOpen);
+            return;
+        }
+
+        if (!nextOpen && onClose) {
+            onClose();
+        }
+    };
 
     const handleConfirm = async () => {
         if (onConfirm) {
@@ -52,11 +71,11 @@ export default function SuccessModal({
             }
         }
 
-        onOpenChange(false);
+        handleOpenChange(false);
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={isDialogOpen} onOpenChange={handleOpenChange}>
             <DialogContent className="bg-light text-dark sm:max-w-[480px] dark:bg-dark dark:text-light">
                 <DialogHeader className="items-center text-center sm:items-center sm:text-center">
                     <span className="mb-1 inline-flex h-12 w-12 items-center justify-center rounded-full bg-good/10 text-good">
@@ -72,6 +91,7 @@ export default function SuccessModal({
 
                 <DialogFooter className="mt-2 sm:justify-center">
                     <Button
+                        type="button"
                         className="min-w-[120px] bg-good text-light hover:bg-good/90 disabled:opacity-70"
                         onClick={handleConfirm}
                         disabled={loading}

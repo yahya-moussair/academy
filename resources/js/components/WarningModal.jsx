@@ -15,8 +15,9 @@ import { useState } from 'react';
  * Reusable warning modal
  *
  * Props:
- * - open: boolean
- * - onOpenChange: (open: boolean) => void
+ * - open | isOpen: boolean
+ * - onOpenChange?: (open: boolean) => void
+ * - onClose?: () => void
  * - title?: string
  * - description?: string
  * - confirmLabel?: string
@@ -26,7 +27,9 @@ import { useState } from 'react';
  */
 export default function WarningModal({
     open,
+    isOpen,
     onOpenChange,
+    onClose,
     title = 'Warning',
     description = 'Please review this information before continuing.',
     confirmLabel = 'OK',
@@ -36,6 +39,22 @@ export default function WarningModal({
 }) {
     const [internalLoading, setInternalLoading] = useState(false);
     const loading = loadingProp || internalLoading;
+    const isDialogOpen = isOpen ?? open ?? false;
+
+    const handleOpenChange = (nextOpen) => {
+        if (!nextOpen && loading) {
+            return;
+        }
+
+        if (onOpenChange) {
+            onOpenChange(nextOpen);
+            return;
+        }
+
+        if (!nextOpen && onClose) {
+            onClose();
+        }
+    };
 
     const handleConfirm = async () => {
         if (onConfirm) {
@@ -52,11 +71,11 @@ export default function WarningModal({
             }
         }
 
-        onOpenChange(false);
+        handleOpenChange(false);
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={isDialogOpen} onOpenChange={handleOpenChange}>
             <DialogContent className="bg-light text-dark sm:max-w-[480px] dark:bg-dark dark:text-light">
                 <DialogHeader className="items-center text-center sm:items-center sm:text-center">
                     <span className="mb-1 inline-flex h-12 w-12 items-center justify-center rounded-full bg-alpha/10 text-alpha">
@@ -72,6 +91,7 @@ export default function WarningModal({
 
                 <DialogFooter className="mt-2 sm:justify-center">
                     <Button
+                        type="button"
                         className="bg-alpha min-w-[120px] hover:bg-alpha/90 disabled:opacity-70"
                         onClick={handleConfirm}
                         disabled={loading}
